@@ -17,18 +17,18 @@
     // Spaces for multi-line unordered list items
     "ul_multi": 3,
     // Spaces for multi-line ordered list items
-    "ol_multi": 2
+    "ol_multi": 2,
   },
 
   "MD034": false,
 
-   // MD044/proper-names : Proper names should have the correct capitalization : https://github.com/DavidAnson/markdownlint/blob/v0.38.0/doc/md044.md
+  // MD044/proper-names : Proper names should have the correct capitalization : https://github.com/DavidAnson/markdownlint/blob/v0.38.0/doc/md044.md
   "MD044": {
     // List of proper names
     "names": [],
     // Include code blocks
     "code_blocks": false,
     // Include HTML elements
-    "html_elements": false
-  }
+    "html_elements": false,
+  },
 }
