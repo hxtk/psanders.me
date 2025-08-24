@@ -1,0 +1,8 @@
+name: Markdown Style
+on:
+  - pull_request
+
+jobs:
+  markdownlint:
+    - name: markdownlint-cli2-action
+      uses: DavidAnson/markdownlint-cli2-action@v20.0.0
