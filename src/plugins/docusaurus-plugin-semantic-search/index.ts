@@ -34,7 +34,16 @@ function chunkContent(text, maxWords = 500) {
   return chunks;
 }
 
-export default function semanticSearchPlugin(context, options) {
+interface RootOption {
+  path: string; // relative path to content dir
+  type: "blog" | "docs"; // how to handle permalinks
+}
+
+interface PluginOptions {
+  include: RootOption[];
+}
+
+export default function semanticSearchPlugin(context, options: PluginOptions) {
   const { siteDir } = context;
 
   return {
@@ -43,24 +52,29 @@ export default function semanticSearchPlugin(context, options) {
     async loadContent(): Promise<LoadedContent> {
       const { include } = options;
 
-      const docsDir = "recipes";
-      // tslint:disable-next-line: no-if-statement
-      if (!fs.existsSync(docsDir)) {
-        return null;
+      const metadata: any[] = [];
+
+      for (const root of include) {
+        const contentDir = path.join(siteDir, root.path);
+        if (!fs.existsSync(contentDir)) continue;
+
+        const files = glob.sync("**/*.md", { cwd: contentDir });
+        const rootMetadata = await Promise.all(
+          files.map((source) =>
+            processMetadata({
+              context,
+              options,
+              refDir: contentDir,
+              source,
+              type: root.type,
+              basePath: root.path,
+            }),
+          ),
+        );
+
+        metadata.push(...rootMetadata);
       }
 
-      // Metadata for default/ master docs files.
-      const docsFiles = glob.sync(`**/*.md`, { cwd: docsDir });
-      const docsPromises = docsFiles.map(async (source) =>
-        processMetadata({
-          context,
-          options,
-          refDir: docsDir,
-          source,
-        }),
-      );
-
-      const metadata = await Promise.all([...docsPromises]);
       return { metadata };
     },
 
@@ -111,6 +125,28 @@ export default function semanticSearchPlugin(context, options) {
 
       // Write the final index into static assets
       await createData("search-index.json", JSON.stringify(entries, null, 2));
+    },
+
+    getThemePath() {
+      return path.resolve(__dirname, "./theme");
+    },
+
+    getTypeScriptThemePath() {
+      return path.resolve(__dirname, "./theme");
+    },
+
+    // Augment the navbar with our search box
+    configureThemeConfig(themeConfig) {
+      return {
+        ...themeConfig,
+        navbar: {
+          ...themeConfig.navbar,
+          items: [
+            ...(themeConfig.navbar?.items ?? []),
+            { type: "semanticSearch", position: "right" },
+          ],
+        },
+      };
     },
   };
 }

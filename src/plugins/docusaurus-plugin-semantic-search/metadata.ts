@@ -7,6 +7,7 @@ import fs from "fs-extra";
 import path from "path";
 import removeMd from "remove-markdown";
 import striptags from "striptags";
+import { read } from "to-vfile";
 import { VFile } from "vfile";
 import { matter } from "vfile-matter";
 
@@ -20,43 +21,78 @@ export interface MetadataRaw {
   readonly plaintext: string;
 }
 
+interface ProcessMetadataOptions {
+  source: string;
+  refDir: string;
+  context: any;
+  type: "blog" | "docs";
+  basePath: string;
+}
+
 export default async function processMetadata({
   source,
   refDir,
   context,
-}): Promise<MetadataRaw> {
+  type,
+  basePath,
+}: ProcessMetadataOptions): Promise<MetadataRaw> {
   const { siteDir, baseUrl } = context;
-
   const dirName = path.dirname(source);
   const filePath = path.join(refDir, source);
-  const fileStringPromise = fs.readFile(filePath, "utf-8");
 
-  const contents = await fileStringPromise;
+  const file = await read(filePath);
+  matter(file, { strip: true });
+  const contents = String(file);
+  const frontMatter = file.data?.matter;
+
   const plaintext = removeMd(striptags(contents));
-  const { frontMatter = {}, excerpt } = parseMarkdownFile({
+
+  const { contentTitle, excerpt } = parseMarkdownFile({
     filePath,
     fileContent: contents,
     parseFrontMatter: parseFileContentFrontMatter,
   });
 
   const baseID = frontMatter.id || path.basename(source, path.extname(source));
-  // tslint:disable-next-line: no-if-statement
   if (baseID.includes("/")) {
     throw new Error('Document id cannot include "/".');
   }
-  // tslint:enable no-if-statement
-
-  // Append subdirectory as part of id.
   const id = dirName !== "." ? `${dirName}/${baseID}` : baseID;
 
-  const title = frontMatter.title || baseID;
+  const title = frontMatter.title ?? contentTitle;
   const description = frontMatter.description || excerpt;
 
-  // The last portion of the url path. Eg: 'foo/bar', 'bar'
-  const routePath = id;
-  const permalink = normalizeUrl([baseUrl, routePath]);
+  let permalink: string;
 
-  const metadata: MetadataRaw = {
+  if (frontMatter.slug) {
+    // Front matter slug overrides everything
+    permalink = normalizeUrl([baseUrl, basePath, frontMatter.slug as string]);
+  } else {
+    // Determine the "name" portion of the URL
+    let fileName = path.basename(source, path.extname(source));
+
+    if (fileName === "index") {
+      const dirs = path.dirname(source).split(path.sep);
+      fileName = dirs[dirs.length - 1] || fileName;
+    }
+
+    if (type === "blog") {
+      // Check for date prefix in blog filenames
+      const dateMatch = fileName.match(/^(\d{4}-\d{2}-\d{2})-(.+)$/);
+      if (!dateMatch) {
+        permalink = normalizeUrl([baseUrl, basePath, fileName]);
+      } else {
+        const [, datePart, namePart] = dateMatch;
+        const [yyyy, mm, dd] = datePart.split("-");
+        permalink = normalizeUrl([baseUrl, basePath, yyyy, mm, dd, namePart]);
+      }
+    } else {
+      const source = path.relative(path.join(siteDir, basePath), filePath);
+      permalink = getDocPermalink({ source, baseUrl, basePath });
+    }
+  }
+
+  return {
     description,
     id,
     permalink,
@@ -64,34 +100,55 @@ export default async function processMetadata({
     source: aliasedSitePath(filePath, siteDir),
     title,
   };
+}
 
-  return metadata;
+function getDocPermalink({
+  source, // file path relative to docs root, e.g. 'guides/setup/index.md'
+  baseUrl, // site base URL
+  basePath, // docs root path in URL, e.g. 'docs'
+}: {
+  source: string;
+  baseUrl: string;
+  basePath: string;
+}) {
+  const parsed = path.parse(source);
+
+  // Compute the relative path segments
+  let segments = parsed.dir ? parsed.dir.split(path.sep) : [];
+
+  // Determine the "file" segment
+  let fileName = parsed.name;
+  if (fileName === "index") {
+    // If index, omit filename (URL is just the folder)
+    // segments are already correct
+  } else {
+    segments.push(fileName);
+  }
+
+  // Construct the final URL
+  return normalizeUrl([baseUrl, basePath, ...segments]);
 }
 
 /**
- * Takes a raw Markdown file content, and parses the front matter using
- * vfile-matter.
+ * Parses front matter using vfile-matter.
  */
 export function parseFileContentFrontMatter(fileContent: string): {
-  /** Front matter as parsed by gray-matter. */
   frontMatter: { [key: string]: unknown };
-  /** The remaining content, trimmed. */
   content: string;
 } {
-  // Wrap the raw content in a VFile
-  const file = new VFile({ value: stringToArrayBuffer(fileContent) });
+  // Encode string into a Uint8Array (backed by ArrayBuffer)
+  const uint8 = new TextEncoder().encode(fileContent);
+  const file = new VFile({ value: uint8 });
+  matter(file, { strip: true });
 
-  // Parse the front matter using vfile-matter
-  matter(file, { strip: true }); // `strip: true` removes front matter from content
+  // Convert the possibly stripped value back to string
+  const contentString =
+    typeof file.value === "string"
+      ? file.value
+      : new TextDecoder().decode(file.value);
 
   return {
     frontMatter: file.data.matter || {},
-    content: String(file).trim(),
+    content: contentString.trim(),
   };
-}
-
-function stringToArrayBuffer(str) {
-  const encoder = new TextEncoder(); // Defaults to UTF-8
-  const uint8Array = encoder.encode(str); // Encodes the string into a Uint8Array
-  return uint8Array.buffer; // Returns the underlying ArrayBuffer
 }

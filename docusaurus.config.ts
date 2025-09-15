@@ -77,7 +77,21 @@ const config: Config = {
         sidebarPath: "./sidebars.ts",
       },
     ],
-    require.resolve("./src/plugins/docusaurus-plugin-semantic-search"),
+    [
+      require.resolve("./src/plugins/docusaurus-plugin-semantic-search"),
+      {
+        include: [
+          {
+            path: "recipes",
+            type: "docs",
+          },
+          {
+            path: "blog",
+            type: "blog",
+          },
+        ],
+      },
+    ],
   ],
 
   themeConfig: {

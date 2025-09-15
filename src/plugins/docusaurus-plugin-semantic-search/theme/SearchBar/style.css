@@ -1,0 +1,28 @@
+.semanticSearchButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem; /* space between icon/text/shortcut */
+  padding: 0.25rem 0.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  color: var(--ifm-navbar-link-color);
+}
+
+.semanticSearchButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.kbd {
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  font-size: 0.75rem;
+  font-family: var(--ifm-font-family-monospace);
+  background: var(--ifm-background-color);
+  opacity: 0.7;
+}
+

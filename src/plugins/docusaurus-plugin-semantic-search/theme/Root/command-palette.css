@@ -1,0 +1,53 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 100px;
+  z-index: 50;
+}
+
+.dialog {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.input {
+  border: none;
+  outline: none;
+  font-size: 16px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #ddd;
+}
+
+.list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.item {
+  padding: 12px 16px;
+  cursor: pointer;
+}
+
+.item:hover {
+  background-color: #f5f5f5;
+}
+
+.itemTitle {
+  font-weight: 500;
+}
+
+.itemSubtitle {
+  font-size: 13px;
+  color: #666;
+}
