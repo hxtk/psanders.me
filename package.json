@@ -18,15 +18,22 @@
     "@docusaurus/core": "3.8.1",
     "@docusaurus/preset-classic": "3.8.1",
     "@mdx-js/react": "^3.0.0",
+    "@tensorflow-models/universal-sentence-encoder": "^1.3.3",
     "clsx": "^2.0.0",
+    "fs-extra": "^11.3.1",
     "prism-react-renderer": "^2.3.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "remove-markdown": "^0.6.2",
+    "striptags": "^3.2.0",
+    "vfile": "^6.0.3",
+    "vfile-matter": "^5.0.1"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "3.8.1",
     "@docusaurus/tsconfig": "3.8.1",
     "@docusaurus/types": "3.8.1",
+    "@tensorflow/tfjs-node": "^4.22.0",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "markdownlint-cli2": "^0.18.1",
     "prettier": "^3.6.2",

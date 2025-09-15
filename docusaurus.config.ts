@@ -44,8 +44,7 @@ const config: Config = {
           sidebarPath: "./sidebars.ts",
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            "https://github.com/hxtk/psanders.me/tree/main/",
+          editUrl: "https://github.com/hxtk/psanders.me/tree/main/",
         },
         blog: {
           showReadingTime: true,
@@ -55,8 +54,7 @@ const config: Config = {
           },
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            "https://github.com/hxtk/psanders.me/tree/main/",
+          editUrl: "https://github.com/hxtk/psanders.me/tree/main/",
           // Useful options to enforce blogging best practices
           onInlineTags: "warn",
           onInlineAuthors: "warn",
@@ -79,6 +77,7 @@ const config: Config = {
         sidebarPath: "./sidebars.ts",
       },
     ],
+    require.resolve("./src/plugins/docusaurus-plugin-semantic-search"),
   ],
 
   themeConfig: {
