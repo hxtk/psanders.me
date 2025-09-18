@@ -11,6 +11,8 @@ import { read } from "to-vfile";
 import { VFile } from "vfile";
 import { matter } from "vfile-matter";
 
+import {extractFirstHeading} from "./lib/markdown";
+
 export interface MetadataRaw {
   readonly id: string;
   readonly title: string;
@@ -47,7 +49,7 @@ export default async function processMetadata({
 
   const plaintext = removeMd(striptags(contents));
 
-  const { contentTitle, excerpt } = parseMarkdownFile({
+  const { excerpt } = parseMarkdownFile({
     filePath,
     fileContent: contents,
     parseFrontMatter: parseFileContentFrontMatter,
@@ -59,6 +61,7 @@ export default async function processMetadata({
   }
   const id = dirName !== "." ? `${dirName}/${baseID}` : baseID;
 
+  const contentTitle = await extractFirstHeading(contents);
   const title = frontMatter.title ?? contentTitle;
   const description = frontMatter.description || excerpt;
 
