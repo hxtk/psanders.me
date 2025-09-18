@@ -6,6 +6,7 @@ import glob from "glob";
 import path from "path";
 
 import processMetadata from "./metadata";
+import {chunkMarkdown} from "./lib/markdown";
 
 function sha256(text) {
   return crypto.createHash("sha256").update(text).digest("hex");
@@ -97,7 +98,7 @@ export default function semanticSearchPlugin(context, options: PluginOptions) {
 
       for (const post of metadata) {
         const { permalink, title, description, plaintext } = post;
-        const chunks = chunkContent(plaintext);
+        const chunks = await chunkMarkdown(plaintext);
 
         for (const chunk of chunks) {
           const key = sha256(chunk);
